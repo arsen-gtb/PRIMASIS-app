@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>PRIMASIS - INPUT DATA SETOR BARANG</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>HALAMAN INPUT DATA SETOR BARANG</h2>
+        
+        <div class="form-group">
+            <label>Tanggal :</label>
+            <input type="date" id="tanggalSelect">
+        </div>
+        
+        <div class="form-group">
+            <label>Nama Mitra :</label>
+            <select id="mitraSelect"></select>
+        </div>
+
+        <div style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 15px;">
+            <div class="form-group">
+                <label>Nama Produk :</label>
+                <select id="produkSelect" disabled></select>
+            </div>
+            <div class="form-group">
+                <label>Jumlah Disetor :</label>
+                <input type="number" id="jumlahInput" disabled min="1">
+            </div>
+
+            <div class="btn-group">
+                <button id="btnAdd" onclick="enableInput()">Add</button>
+                <button id="btnSave" onclick="saveDataBaris()" disabled class="btn-success">Save</button>
+                <button id="btnDelete" onclick="toggleDeleteMode()" class="btn-warning">Delete</button>
+                <a href="admin.html" class="btn btn-secondary">Back</a>
+                <button onclick="logout()" class="btn btn-danger">EXIT</button>
+            </div>
+        </div>
+
+        <table id="tableSetor">
+            <thead>
+                <tr>
+                    <th>Nama Produk</th>
+                    <th>Jumlah Disetor</th>
+                    <th id="thSelect" class="col-select" style="display:none;">Pilih</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        checkAccess("admin");
+
+        let deleteMode = false;
+
+        function loadOptions() {
+            const users = getUsers().filter(u => u.hakAkses === "mitra");
+            const mSelect = document.getElementById("mitraSelect");
+            mSelect.innerHTML = users.map(u => `<option value="${u.id}">${u.nama}</option>`).join('');
+
+            const prods = getProducts();
+            const pSelect = document.getElementById("produkSelect");
+            pSelect.innerHTML = prods.map(p => `<option value="${p.id_produk}">${p.nama_produk}</option>`).join('');
+            
+            document.getElementById("tanggalSelect").valueAsDate = new Date();
+            renderTable();
+        }
+
+        function enableInput() {
+            document.getElementById("produkSelect").disabled = false;
+            document.getElementById("jumlahInput").disabled = false;
+            document.getElementById("btnSave").disabled = false;
+        }
+
+        function disableInput() {
+            document.getElementById("produkSelect").disabled = true;
+            document.getElementById("jumlahInput").disabled = true;
+            document.getElementById("btnSave").disabled = true;
+        }
+
+        function saveDataBaris() {
+            const tgl = document.getElementById("tanggalSelect").value;
+            const mitraId = document.getElementById("mitraSelect").value;
+            const prodId = document.getElementById("produkSelect").value;
+            const qty = parseInt(document.getElementById("jumlahInput").value);
+
+            if (!tgl || !qty || qty <= 0) {
+                alert("Mohon isi tanggal dan jumlah dengan benar!");
+                return;
+            }
+
+            let setoran = getSetoran();
+            let record = setoran.find(s => s.tanggal === tgl && s.mitraId === mitraId);
+
+            if (!record) {
+                record = { tanggal: tgl, mitraId: mitraId, items: [] };
+                setoran.push(record);
+            }
+
+            const existingItem = record.items.find(i => i.id_produk === prodId);
+            if (existingItem) {
+                existingItem.jumlah += qty;
+            } else {
+                record.items.push({ id_produk: prodId, jumlah: qty });
+            }
+
+            saveSetoran(setoran);
+            disableInput();
+            document.getElementById("jumlahInput").value = "";
+            renderTable();
+        }
+
+        function renderTable() {
+            const tgl = document.getElementById("tanggalSelect").value;
+            const mitraId = document.getElementById("mitraSelect").value;
+            const setoran = getSetoran();
+            const record = setoran.find(s => s.tanggal === tgl && s.mitraId === mitraId);
+            const prods = getProducts();
+
+            // Atur visibilitas header kolom "Pilih"
+            const thSelect = document.getElementById("thSelect");
+            thSelect.style.display = deleteMode ? "" : "none";
+
+            const tbody = document.querySelector("#tableSetor tbody");
+            tbody.innerHTML = "";
+
+            if (record && record.items) {
+                record.items.forEach((item, index) => {
+                    const p = prods.find(x => x.id_produk === item.id_produk);
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${p ? p.nama_produk : item.id_produk}</td>
+                        <td>${item.jumlah}</td>
+                        <td class="col-select" style="${deleteMode ? '' : 'display:none;'}">
+                            <input type="checkbox" class="chk-del" data-index="${index}">
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        function toggleDeleteMode() {
+            const btnDelete = document.getElementById("btnDelete");
+
+            if (!deleteMode) {
+                // Masuk ke Mode Hapus
+                deleteMode = true;
+                btnDelete.innerText = "Done Delete";
+                renderTable();
+            } else {
+                // Keluar dari Mode Hapus & Proses Penghapusan
+                const checkboxes = document.querySelectorAll(".chk-del:checked");
+                
+                if (checkboxes.length > 0) {
+                    if (confirm("Apakah Anda yakin ingin menghapus data yang dipilih?")) {
+                        const tgl = document.getElementById("tanggalSelect").value;
+                        const mitraId = document.getElementById("mitraSelect").value;
+                        let setoran = getSetoran();
+                        let record = setoran.find(s => s.tanggal === tgl && s.mitraId === mitraId);
+
+                        if (record) {
+                            const indicesToDelete = Array.from(checkboxes).map(c => parseInt(c.dataset.index));
+                            // Filter item yang indeksnya tidak termasuk dalam indeks yang akan dihapus
+                            record.items = record.items.filter((_, idx) => !indicesToDelete.includes(idx));
+                            saveSetoran(setoran);
+                        }
+                    }
+                }
+
+                // Kembalikan status tombol dan hapus mode delete
+                deleteMode = false;
+                btnDelete.innerText = "Delete";
+                renderTable();
+            }
+        }
+
+        document.getElementById("tanggalSelect").addEventListener("change", renderTable);
+        document.getElementById("mitraSelect").addEventListener("change", renderTable);
+        loadOptions();
+    </script>
+</body>
+</html>
