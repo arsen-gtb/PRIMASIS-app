@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>PRIMASIS - DATABASE BARANG</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>HALAMAN DATABASE BARANG</h2>
+        
+        <div class="btn-group">
+            <button onclick="enableEdit()">Edit</button>
+            <button onclick="addNewRow()">Add</button>
+            <button onclick="saveAll()" class="btn-success">Save</button>
+            <button id="btnDelete" onclick="toggleDeleteMode()" class="btn-warning">Delete</button>
+            <a href="admin.html" class="btn btn-secondary">Back</a>
+            <button onclick="logout()" class="btn btn-danger">EXIT</button>
+        </div>
+
+        <table id="prodTable">
+            <thead>
+                <tr>
+                    <th>ID Produk</th>
+                    <th>Nama Produk</th>
+                    <th>Varian</th>
+                    <th>Satuan</th>
+                    <th>Modal (Rp)</th>
+                    <th>Harga Supplier (Rp)</th>
+                    <th>Harga Mitra (Rp)</th>
+                    <th id="th-select" style="display:none;">Pilih</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        checkAccess("admin");
+        let isEditable = false;
+        let deleteMode = false;
+
+        function renderTable() {
+            const prods = getProducts();
+            const tbody = document.querySelector("#prodTable tbody");
+            tbody.innerHTML = "";
+
+            // Atur visibilitas header kolom "Pilih"
+            const thSelect = document.getElementById("th-select");
+            thSelect.style.display = deleteMode ? "" : "none";
+
+            prods.forEach((p, i) => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td contenteditable="${isEditable}">${p.id_produk}</td>
+                    <td contenteditable="${isEditable}">${p.nama_produk}</td>
+                    <td contenteditable="${isEditable}">${p.varian}</td>
+                    <td contenteditable="${isEditable}">${p.satuan}</td>
+                    <td contenteditable="${isEditable}">${p.modal}</td>
+                    <td contenteditable="${isEditable}">${p.jual_supplier}</td>
+                    <td contenteditable="${isEditable}">${p.jual_mitra}</td>
+                    <td class="col-select" style="${deleteMode ? '' : 'display:none;'}">
+                        <input type="checkbox" class="chk-del" data-index="${i}">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function enableEdit() {
+            isEditable = true;
+            renderTable();
+        }
+
+        function addNewRow() {
+            isEditable = true;
+            const tbody = document.querySelector("#prodTable tbody");
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td contenteditable="true">p-00${Date.now().toString().slice(-2)}</td>
+                <td contenteditable="true"></td>
+                <td contenteditable="true"></td>
+                <td contenteditable="true">pcs</td>
+                <td contenteditable="true">0</td>
+                <td contenteditable="true">0</td>
+                <td contenteditable="true">0</td>
+                <td class="col-select" style="${deleteMode ? '' : 'display:none;'}">
+                    <input type="checkbox" class="chk-del">
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function saveAll() {
+            const rows = document.querySelectorAll("#prodTable tbody tr");
+            let newProds = [];
+            let valid = true;
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll("td");
+                const p = {
+                    id_produk: cells[0].innerText.trim(),
+                    nama_produk: cells[1].innerText.trim(),
+                    varian: cells[2].innerText.trim(),
+                    satuan: cells[3].innerText.trim(),
+                    modal: parseFloat(cells[4].innerText.trim()) || 0,
+                    jual_supplier: parseFloat(cells[5].innerText.trim()) || 0,
+                    jual_mitra: parseFloat(cells[6].innerText.trim()) || 0
+                };
+
+                if (!p.id_produk || !p.nama_produk) {
+                    valid = false;
+                }
+                newProds.push(p);
+            });
+
+            if (!valid) {
+                alert("Mohon isi data dengan lengkap!");
+                return;
+            }
+
+            saveProducts(newProds);
+            isEditable = false;
+            renderTable();
+            alert("Data Produk berhasil disimpan!");
+        }
+
+        function toggleDeleteMode() {
+            // Jika saat ini deleteMode sedang aktif dan tombol diklik lagi, jalankan proses hapus
+            if (deleteMode) {
+                const checkboxes = document.querySelectorAll(".chk-del:checked");
+                if (checkboxes.length > 0) {
+                    if (confirm("Apakah Anda yakin ingin menghapus data/baris yang dipilih?")) {
+                        const indicesToDelete = Array.from(checkboxes)
+                            .map(c => parseInt(c.dataset.index))
+                            .filter(idx => !isNaN(idx));
+                        
+                        let prods = getProducts();
+                        // Filter data produk berdasarkan index
+                        prods = prods.filter((_, idx) => !indicesToDelete.includes(idx));
+                        saveProducts(prods);
+                    }
+                }
+            }
+
+            // Switch mode
+            deleteMode = !deleteMode;
+
+            // Render ulang tabel untuk menampilkan/menyembunyikan kolom checkbox dan header "Pilih"
+            renderTable();
+
+            // Ubah teks pada tombol Delete
+            const btnDelete = document.getElementById("btnDelete");
+            btnDelete.innerText = deleteMode ? "Done Delete" : "Delete";
+        }
+
+        // Inisialisasi awal saat halaman dimuat
+        renderTable();
+    </script>
+</body>
+</html>
