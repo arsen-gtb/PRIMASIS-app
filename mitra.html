@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>PRIMASIS - HALAMAN MITRA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>HALAMAN MITRA</h2>
+        <p style="text-align: center; margin-bottom: 20px;">Selamat Datang, <strong id="mitraName"></strong></p>
+
+        <div style="display: flex; flex-direction: column; gap: 15px; max-width: 300px; margin: 0 auto;">
+            <a href="mitra-retur.html" class="btn">Input Data Retur Barang</a>
+            <a href="mitra-laporan.html" class="btn">Cetak Laporan</a>
+            <button onclick="logout()" class="btn btn-danger">EXIT</button>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        checkAccess("mitra");
+        const user = getCurrentUser();
+        document.getElementById("mitraName").innerText = user.nama;
+    </script>
+</body>
+</html>
