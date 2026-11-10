@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>PRIMASIS - CETAK LAPORAN ADMIN</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>HALAMAN CETAK LAPORAN ADMIN</h2>
+        
+        <div class="no-print">
+            <div class="form-group">
+                <label>Mitra :</label>
+                <select id="mitraSelect"></select>
+            </div>
+            <div class="form-group">
+                <label>Tanggal :</label>
+                <input type="date" id="tanggalSelect">
+            </div>
+            <div class="btn-group">
+                <button onclick="window.print()">Print</button>
+                <a href="admin.html" class="btn btn-secondary">Back</a>
+                <button onclick="logout()" class="btn btn-danger">EXIT</button>
+            </div>
+        </div>
+
+        <div id="draftPrint" style="margin-top: 20px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h3>LAPORAN SUPPLIER - PRIMASIS</h3>
+                <p><span id="adminAlamat"></span> | Telp: <span id="adminHp"></span></p>
+                <hr style="margin: 10px 0;">
+                <p><strong>Mitra:</strong> <span id="printMitra"></span> | <strong>Tanggal:</strong> <span id="printTanggal"></span></p>
+                <p><em>Tanggal Cetak: <span id="printNow"></span></em></p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama Produk</th>
+                        <th>Jumlah Disetor</th>
+                        <th>Jumlah Modal</th>
+                        <th>Retur</th>
+                        <th>Jumlah Tagihan</th>
+                    </tr>
+                </thead>
+                <tbody id="laporanBody"></tbody>
+            </table>
+
+            <div style="margin-top: 20px; font-weight: bold;">
+                <p>Total Modal : <span id="totModal">Rp 0</span></p>
+                <p>Total Tagihan : <span id="totTagihan">Rp 0</span></p>
+                <p>Keuntungan : <span id="keuntungan">Rp 0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        checkAccess("admin");
+
+        function init() {
+            const users = getUsers();
+            const admin = users.find(u => u.hakAkses === "admin");
+            document.getElementById("adminAlamat").innerText = admin ? admin.alamat : "";
+            document.getElementById("adminHp").innerText = admin ? admin.hp : "";
+
+            // Opsi default mitra kosong
+            const mitras = users.filter(u => u.hakAkses === "mitra");
+            const mSelect = document.getElementById("mitraSelect");
+            mSelect.innerHTML = `<option value="">-- Pilih Mitra --</option>` + 
+                mitras.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
+
+            // Set tanggal awal menjadi kosong
+            document.getElementById("tanggalSelect").value = "";
+            
+            // Event listener saat tanggal atau mitra diubah
+            document.getElementById("mitraSelect").addEventListener("change", renderLaporan);
+            document.getElementById("tanggalSelect").addEventListener("change", renderLaporan);
+
+            // Kosongkan tampilan awal saat pertama kali dibuka
+            clearForm();
+        }
+
+        // Fungsi untuk mengosongkan/reset seluruh field tampilan laporan
+        function clearForm() {
+            document.getElementById("printMitra").innerText = "-";
+            document.getElementById("printTanggal").innerText = "-";
+            document.getElementById("printNow").innerText = "-";
+            document.getElementById("laporanBody").innerHTML = "";
+            document.getElementById("totModal").innerText = "Rp 0";
+            document.getElementById("totTagihan").innerText = "Rp 0";
+            document.getElementById("keuntungan").innerText = "Rp 0";
+        }
+
+        function renderLaporan() {
+            const mitraId = document.getElementById("mitraSelect").value;
+            const tgl = document.getElementById("tanggalSelect").value;
+
+            // Jika salah satu (Mitra atau Tanggal) belum dipilih, bersihkan form
+            if (!mitraId || !tgl) {
+                clearForm();
+                return;
+            }
+
+            const users = getUsers();
+            const selectedMitra = users.find(u => u.id === mitraId);
+            const setoran = getSetoran().find(s => s.tanggal === tgl && s.mitraId === mitraId);
+            
+            // Jika data setoran pada tanggal & mitra tersebut tidak ditemukan
+            if (!setoran) {
+                clearForm(); 
+                alert("Anda belum melakukan Input Data Setor Barang untuk tanggal ini");
+                return;
+            }
+
+            // Jika data ditemukan, perbarui informasi header laporan
+            document.getElementById("printMitra").innerText = selectedMitra ? selectedMitra.nama : "";
+            document.getElementById("printTanggal").innerText = tgl;
+            document.getElementById("printNow").innerText = new Date().toLocaleDateString("id-ID");
+
+            const returRecord = getRetur().find(r => r.tanggal === tgl && r.mitraId === mitraId);
+            const prods = getProducts();
+
+            let totalModal = 0;
+            let totalTagihan = 0;
+            const tbody = document.getElementById("laporanBody");
+            tbody.innerHTML = "";
+
+            setoran.items.forEach(item => {
+                const p = prods.find(x => x.id_produk === item.id_produk);
+                let returQty = "";
+                let jmlModal = item.jumlah * (p ? p.modal : 0);
+                let jmlTagihan = "";
+
+                if (returRecord && returRecord.isSent) {
+                    const rItem = returRecord.items.find(i => i.id_produk === item.id_produk);
+                    returQty = rItem ? rItem.jumlah : 0;
+                    const laku = item.jumlah - returQty;
+                    jmlTagihan = laku * (p ? p.jual_supplier : 0);
+
+                    totalModal += jmlModal;
+                    totalTagihan += jmlTagihan;
+                } else {
+                    totalModal += jmlModal;
+                }
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${p ? p.nama_produk : item.id_produk}</td>
+                    <td>${item.jumlah}</td>
+                    <td>${formatRupiah(jmlModal)}</td>
+                    <td>${returQty !== "" ? returQty : "-"}</td>
+                    <td>${jmlTagihan !== "" ? formatRupiah(jmlTagihan) : "-"}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById("totModal").innerText = formatRupiah(totalModal);
+            document.getElementById("totTagihan").innerText = returRecord && returRecord.isSent ? formatRupiah(totalTagihan) : "Menunggu Retur Mitra";
+            document.getElementById("keuntungan").innerText = returRecord && returRecord.isSent ? formatRupiah(totalTagihan - totalModal) : "Menunggu Retur Mitra";
+        }
+
+        init();
+    </script>
+</body>
+</html>
