@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>PRIMASIS - HALAMAN ADMIN</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>HALAMAN ADMIN</h2>
+        <p style="text-align: center; margin-bottom: 20px;">Selamat Datang, <strong id="adminName">Supplier</strong></p>
+        
+        <div style="display: flex; flex-direction: column; gap: 15px; max-width: 300px; margin: 0 auto;">
+            <a href="admin-setor.html" class="btn">Input Data Setor Barang</a>
+            <a href="admin-user.html" class="btn">Edit Data User</a>
+            <a href="admin-barang.html" class="btn">Edit Data Barang</a>
+            <a href="admin-laporan.html" class="btn">Cetak Laporan</a>
+            <button onclick="logout()" class="btn btn-danger">EXIT</button>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        checkAccess("admin");
+        const user = getCurrentUser();
+        document.getElementById("adminName").innerText = user.nama;
+    </script>
+</body>
+</html>
