@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>PRIMASIS - INPUT DATA RETUR BARANG</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>HALAMAN INPUT DATA RETUR BARANG</h2>
+
+        <div class="form-group">
+            <label>Tanggal :</label>
+            <input type="date" id="tanggalSelect">
+        </div>
+
+        <div style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 15px;">
+            <div class="form-group">
+                <label>Nama Produk :</label>
+                <select id="produkSelect" disabled></select>
+            </div>
+            <div class="form-group">
+                <label>Jumlah Di-Retur :</label>
+                <input type="number" id="jumlahReturInput" disabled min="0">
+            </div>
+
+            <div class="btn-group">
+                <button onclick="enableEdit()">Edit</button>
+                <button onclick="saveItem()" class="btn-success">Save</button>
+                <button onclick="sendData()" class="btn-warning">Send</button>
+                <a href="mitra.html" class="btn btn-secondary">Back</a>
+                <button onclick="logout()" class="btn btn-danger">EXIT</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nama Produk</th>
+                    <th>Jumlah Disetor</th>
+                    <th>Jumlah Retur</th>
+                </tr>
+            </thead>
+            <tbody id="returTableBody"></tbody>
+        </table>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        checkAccess("mitra");
+        const user = getCurrentUser();
+
+        function loadData() {
+            document.getElementById("tanggalSelect").valueAsDate = new Date();
+            render();
+        }
+
+        function render() {
+            const tgl = document.getElementById("tanggalSelect").value;
+            const setoran = getSetoran().find(s => s.tanggal === tgl && s.mitraId === user.id);
+
+            if (!setoran) {
+                alert("Supplier belum melakukan Input Data Setor Barang");
+                document.getElementById("returTableBody").innerHTML = "";
+                return;
+            }
+
+            const prods = getProducts();
+            const pSelect = document.getElementById("produkSelect");
+            pSelect.innerHTML = setoran.items.map(i => {
+                const p = prods.find(x => x.id_produk === i.id_produk);
+                return `<option value="${i.id_produk}">${p ? p.nama_produk : i.id_produk}</option>`;
+            }).join('');
+
+            const returs = getRetur().find(r => r.tanggal === tgl && r.mitraId === user.id);
+            const tbody = document.getElementById("returTableBody");
+            tbody.innerHTML = "";
+
+            setoran.items.forEach(item => {
+                const p = prods.find(x => x.id_produk === item.id_produk);
+                let rQty = 0;
+
+                if (returs && returs.items) {
+                    const rItem = returs.items.find(x => x.id_produk === item.id_produk);
+                    if (rItem) rQty = rItem.jumlah;
+                }
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${p ? p.nama_produk : item.id_produk}</td>
+                    <td>${item.jumlah}</td>
+                    <td>${rQty}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function enableEdit() {
+            const tgl = document.getElementById("tanggalSelect").value;
+            const returs = getRetur().find(r => r.tanggal === tgl && r.mitraId === user.id);
+            if (returs && returs.isSent) {
+                alert("Data retur sudah dikirim dan tidak bisa diubah lagi.");
+                return;
+            }
+            document.getElementById("produkSelect").disabled = false;
+            document.getElementById("jumlahReturInput").disabled = false;
+        }
+
+        function saveItem() {
+            const tgl = document.getElementById("tanggalSelect").value;
+            const prodId = document.getElementById("produkSelect").value;
+            const qty = parseInt(document.getElementById("jumlahReturInput").value) || 0;
+
+            let allRetur = getRetur();
+            let record = allRetur.find(r => r.tanggal === tgl && r.mitraId === user.id);
+
+            if (!record) {
+                record = { tanggal: tgl, mitraId: user.id, isSent: false, items: [] };
+                allRetur.push(record);
+            }
+
+            const existing = record.items.find(i => i.id_produk === prodId);
+            if (existing) {
+                existing.jumlah = qty;
+            } else {
+                record.items.push({ id_produk: prodId, jumlah: qty });
+            }
+
+            saveRetur(allRetur);
+            document.getElementById("produkSelect").disabled = true;
+            document.getElementById("jumlahReturInput").disabled = true;
+            render();
+        }
+
+        function sendData() {
+            if (confirm("Apakah Anda akan mengirim data retur?")) {
+                const tgl = document.getElementById("tanggalSelect").value;
+                let allRetur = getRetur();
+                let record = allRetur.find(r => r.tanggal === tgl && r.mitraId === user.id);
+
+                if (!record) {
+                    record = { tanggal: tgl, mitraId: user.id, isSent: true, items: [] };
+                    allRetur.push(record);
+                } else {
+                    record.isSent = true;
+                }
+
+                saveRetur(allRetur);
+                alert("Data retur berhasil dikirim!");
+                render();
+            }
+        }
+
+        document.getElementById("tanggalSelect").addEventListener("change", render);
+        loadData();
+    </script>
+</body>
+</html>
