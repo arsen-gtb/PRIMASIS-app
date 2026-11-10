@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>PRIMASIS - Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 400px; margin-top: 0px;">
+        <div style="width: 100%;">
+  <h1 style="text-align: center; color: rgb(20, 50, 150);">PRIMASIS</h1>
+  <p style="text-align: center; font-weight: 600; font-size: 16px; margin-top: 0;">
+    Kedai Primadona Sistem Informasi Konsinyasi
+  </p>
+</div>
+<p style="text-align: center;">
+    ____________________________________________________
+</p>
+        <h3 style="margin-bottom: 20px;">Halaman Login</h3>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required maxlength="6">
+            </div>
+            <button type="submit" style="width: 100%;">LOGIN</button>
+        </form>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const u = document.getElementById("username").value;
+            const p = document.getElementById("password").value;
+
+            // Validasi password harus berupa angka 0-9 dan tepat 6 digit
+            if (!/^\d{6}$/.test(p)) {
+                alert("Password harus berupa angka (0-9) dan terdiri dari 6 digit!");
+                return;
+            }
+
+            const users = getUsers();
+            // Pencocokan data dengan mengonversi password ke tipe numerik
+            const user = users.find(x => x.username === u && Number(x.password) === Number(p));
+            if (user) {
+                localStorage.setItem("currentUser", JSON.stringify(user));
+                if (user.hakAkses === "admin") {
+                    window.location.href = "admin.html";
+                } else {
+                    window.location.href = "mitra.html";
+                }
+            } else {
+                alert("Username atau Password salah!");
+            }
+        });
+    </script>
+</body>
+</html>
