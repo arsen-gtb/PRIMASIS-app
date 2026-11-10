@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>PRIMASIS - CETAK LAPORAN MITRA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>HALAMAN CETAK LAPORAN MITRA</h2>
+
+        <div class="no-print">
+            <div class="form-group">
+                <label>Tanggal :</label>
+                <input type="date" id="tanggalSelect">
+            </div>
+            <div class="btn-group">
+                <button onclick="window.print()">Print</button>
+                <a href="mitra.html" class="btn btn-secondary">Back</a>
+                <button onclick="logout()" class="btn btn-danger">EXIT</button>
+            </div>
+        </div>
+
+        <div id="draftPrint" style="margin-top: 20px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h3>LAPORAN MITRA - PRIMASIS</h3>
+                <p><strong id="printMitraNama"></strong> | <span id="printMitraAlamat"></span> | Telp: <span id="printMitraHp"></span></p>
+                <hr style="margin: 10px 0;">
+                <p><strong>Tanggal:</strong> <span id="printTanggal"></span></p>
+                <p><em>Tanggal Cetak: <span id="printNow"></span></em></p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama Produk</th>
+                        <th>Jumlah Diterima</th>
+                        <th>Retur</th>
+                        <th>Nilai Terjual</th>
+                        <th>Jumlah Tagihan</th>
+                    </tr>
+                </thead>
+                <tbody id="laporanBody"></tbody>
+            </table>
+
+            <div style="margin-top: 20px; font-weight: bold;">
+                <p>Total Terjual : <span id="totTerjual">Rp 0</span></p>
+                <p>Total Tagihan : <span id="totTagihan">Rp 0</span></p>
+                <p>Keuntungan : <span id="keuntungan">Rp 0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        checkAccess("mitra");
+        const user = getCurrentUser();
+
+        function init() {
+            document.getElementById("printMitraNama").innerText = user.nama;
+            document.getElementById("printMitraAlamat").innerText = user.alamat;
+            document.getElementById("printMitraHp").innerText = user.hp;
+
+            document.getElementById("tanggalSelect").valueAsDate = new Date();
+            document.getElementById("tanggalSelect").addEventListener("change", render);
+            render();
+        }
+
+        function render() {
+            const tgl = document.getElementById("tanggalSelect").value;
+            document.getElementById("printTanggal").innerText = tgl;
+            document.getElementById("printNow").innerText = new Date().toLocaleDateString("id-ID");
+
+            const returs = getRetur().find(r => r.tanggal === tgl && r.mitraId === user.id);
+
+            if (!returs || !returs.isSent) {
+                alert("Anda belum melakukan Input Data Retur");
+                document.getElementById("laporanBody").innerHTML = "";
+                return;
+            }
+
+            const setoran = getSetoran().find(s => s.tanggal === tgl && s.mitraId === user.id);
+            const prods = getProducts();
+
+            let totalTerjual = 0;
+            let totalTagihan = 0;
+            const tbody = document.getElementById("laporanBody");
+            tbody.innerHTML = "";
+
+            setoran.items.forEach(item => {
+                const p = prods.find(x => x.id_produk === item.id_produk);
+                const rItem = returs.items.find(x => x.id_produk === item.id_produk);
+                const rQty = rItem ? rItem.jumlah : 0;
+                const laku = item.jumlah - rQty;
+
+                const nilaiTerjual = laku * (p ? p.jual_mitra : 0);
+                const jmlTagihan = laku * (p ? p.jual_supplier : 0);
+
+                totalTerjual += nilaiTerjual;
+                totalTagihan += jmlTagihan;
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${p ? p.nama_produk : item.id_produk}</td>
+                    <td>${item.jumlah}</td>
+                    <td>${rQty}</td>
+                    <td>${formatRupiah(nilaiTerjual)}</td>
+                    <td>${formatRupiah(jmlTagihan)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById("totTerjual").innerText = formatRupiah(totalTerjual);
+            document.getElementById("totTagihan").innerText = formatRupiah(totalTagihan);
+            document.getElementById("keuntungan").innerText = formatRupiah(totalTerjual - totalTagihan);
+        }
+
+        init();
+    </script>
+</body>
+</html>
