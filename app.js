@@ -3,12 +3,12 @@ import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstat
 
 // 1. Ganti dengan konfigurasi dari Project Firebase Anda
 const firebaseConfig = {
-    apiKey: "AIzaSyDK-ZO1bY9ZqezkRrlDzbvGS830ev7CQqU",
-    authDomain: "primasis02.firebaseapp.com",
-    projectId: "primasis02",
-    storageBucket: "primasis02.firebasestorage.app",
-    messagingSenderId: "702844801036",
-    appId: "1:702844801036:web:20ddb3c3fc4ad9486a5e29"
+    apiKey: "AIzaSyC2rFMDbdoxISo7R7Ff7b2VxjUy2h6F-Gk",
+    authDomain: "primasis-app.firebaseapp.com",
+    projectId: "primasis-app",
+    storageBucket: "primasis-app.firebasestorage.app",
+    messagingSenderId: "326950672108",
+    appId: "1:326950672108:web:83d2c59c5719f033ad77c9"
 };
 
 const app = initializeApp(firebaseConfig);
