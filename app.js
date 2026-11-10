@@ -18,7 +18,7 @@ const db = getFirestore(app);
 const TABEL_01_DEFAULT = [
     { id: "admin", nama: "Supplier", pic: "Chusnul Intan Alfiana", hp: "081234567890", alamat: "Sragen", username: "chusnul", password: 123450, hakAkses: "admin" },
     { id: "mitra_1", nama: "Bisnis Center SMK Muhammadiyah 4 Sragen", pic: "Wahyu Wismawati", hp: "085678901234", alamat: "Jl. Sukowati", username: "smkmuh4", password: 123451, hakAkses: "mitra" },
-    { id: "mitra_2", nama: "Kantin SMA N Mojogedang", pic: "Suyati", hp: "085234567890", alamat: "Kedungjeruk, Mojogedang, Karanganyar, Jawa Tengah 57752", username: "smanmojo", password: "123452", hakAkses: "mitra" }
+    { id: "mitra_2", nama: "Kantin SMA N Mojogedang", pic: "Suyati", hp: "085234567890", alamat: "Kedungjeruk, Mojogedang, Karanganyar, Jawa Tengah 57752", username: "smanmojo", password: 123452, hakAkses: "mitra" }
 ];
 
 const TABEL_02_DEFAULT = [
