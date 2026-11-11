@@ -19,8 +19,8 @@ body {
 }
 
 .gambar {
-    top: 50px;      /* Memberi jarak XXpx dari tepi atas layar */
-    right: 20px;        /* Memberi jarak XXpx dari tepi kanan layar */
+    bottom: 50px;      /* Memberi jarak XXpx dari tepi bawah layar */
+    right: 200px;        /* Memberi jarak XXpx dari tepi kanan layar */
     width: 50px;      /* Mengatur ukuran lebar gambar (opsional) */
     height: auto;      /* Menjaga proporsi gambar */
     z-index: 1000;     /* Memastikan gambar melayang di atas elemen teks/desain lainnya */
