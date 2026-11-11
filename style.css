@@ -21,8 +21,8 @@ body {
 .gambar-primasis {
     position: fixed;
     bottom: 50px;      /* Memberi jarak XXpx dari tepi bawah layar */
-    right: 50px;        /* Memberi jarak XXpx dari tepi kanan layar */
-    width: 200px;      /* Mengatur ukuran lebar gambar (opsional) */
+    right: 20px;        /* Memberi jarak XXpx dari tepi kanan layar */
+    width: 150px;      /* Mengatur ukuran lebar gambar (opsional) */
     height: auto;      /* Menjaga proporsi gambar */
     z-index: 1000;     /* Memastikan gambar melayang di atas elemen teks/desain lainnya */
     border-radius: 8px; /* Opsional: Membuat sudut gambar melengkung */
