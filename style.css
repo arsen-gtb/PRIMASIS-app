@@ -18,10 +18,10 @@ body {
     border-radius: 8px; /* Opsional: membuat sudut gambar melengkung */
 }
 
-.gambar-kiri-atas {
-    top: 20px;      /* Memberi jarak XXpx dari tepi atas layar */
+.gambar {
+    top: 50px;      /* Memberi jarak XXpx dari tepi atas layar */
     right: 20px;        /* Memberi jarak XXpx dari tepi kanan layar */
-    width: 100px;      /* Mengatur ukuran lebar gambar (opsional) */
+    width: 50px;      /* Mengatur ukuran lebar gambar (opsional) */
     height: auto;      /* Menjaga proporsi gambar */
     z-index: 1000;     /* Memastikan gambar melayang di atas elemen teks/desain lainnya */
     border-radius: 8px; /* Opsional: Membuat sudut gambar melengkung */
