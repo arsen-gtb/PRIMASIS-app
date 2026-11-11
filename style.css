@@ -20,8 +20,8 @@ body {
 
 .gambar-kiri-bawah {
     position: fixed;   /* Membuat gambar terkunci di posisi layar */
-    bottom: 40px;      /* Memberi jarak 20px dari tepi bawah layar */
-    left: 30px;        /* Memberi jarak 20px dari tepi kiri layar */
+    bottom: 200px;      /* Memberi jarak XXpx dari tepi bawah layar */
+    left: 50px;        /* Memberi jarak XXpx dari tepi kiri layar */
     width: 150px;      /* Mengatur ukuran lebar gambar (opsional) */
     height: auto;      /* Menjaga proporsi gambar */
     z-index: 1000;     /* Memastikan gambar melayang di atas elemen teks/desain lainnya */
