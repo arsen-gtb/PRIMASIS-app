@@ -19,6 +19,7 @@ body {
 }
 
 .gambar-primasis {
+    position: fixed;
     bottom: 50px;      /* Memberi jarak XXpx dari tepi bawah layar */
     right: 50px;        /* Memberi jarak XXpx dari tepi kanan layar */
     width: 450px;      /* Mengatur ukuran lebar gambar (opsional) */
