@@ -11,6 +11,13 @@ body {
     padding: 20px;
 }
 
+/* CSS dasar agar gambar responsif dan tidak melebihi lebar layar */
+.gambar-responsif {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px; /* Opsional: membuat sudut gambar melengkung */
+}
+
 .container {
     max-width: 900px;
     margin: 0 auto;
