@@ -18,7 +18,7 @@ body {
     border-radius: 8px; /* Opsional: membuat sudut gambar melengkung */
 }
 
-.gambar {
+.gambar-primasis {
     bottom: 50px;      /* Memberi jarak XXpx dari tepi bawah layar */
     right: 200px;        /* Memberi jarak XXpx dari tepi kanan layar */
     width: 50px;      /* Mengatur ukuran lebar gambar (opsional) */
