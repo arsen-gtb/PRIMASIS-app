@@ -13,7 +13,7 @@ body {
 
 /* CSS dasar agar gambar responsif dan tidak melebihi lebar layar */
 .gambar-responsif {
-    max-width: 100%;
+    max-width: 50%;
     height: auto;
     border-radius: 8px; /* Opsional: membuat sudut gambar melengkung */
 }
