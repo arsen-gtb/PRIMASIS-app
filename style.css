@@ -18,6 +18,16 @@ body {
     border-radius: 8px; /* Opsional: membuat sudut gambar melengkung */
 }
 
+.gambar-kiri-bawah {
+    position: fixed;   /* Membuat gambar terkunci di posisi layar */
+    bottom: 20px;      /* Memberi jarak 20px dari tepi bawah layar */
+    left: 20px;        /* Memberi jarak 20px dari tepi kiri layar */
+    width: 150px;      /* Mengatur ukuran lebar gambar (opsional) */
+    height: auto;      /* Menjaga proporsi gambar */
+    z-index: 1000;     /* Memastikan gambar melayang di atas elemen teks/desain lainnya */
+    border-radius: 8px; /* Opsional: Membuat sudut gambar melengkung */
+}
+
 .container {
     max-width: 900px;
     margin: 0 auto;
